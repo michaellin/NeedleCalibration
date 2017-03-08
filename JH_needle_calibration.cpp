@@ -103,18 +103,22 @@ int main (int argc, char **argv)
 
 
 #ifdef TEST
-const float calibX[] {
+const float calibX[10] {
+0.0,
 0.04, 0.08, 0.12,
+0.0, 0.0, 0.0,
 0.0, 0.0, 0.0,
 };
 
-const float calibY[] {
--0.01, -0.01, -0.01,
-0.03, 0.05, 0.09,
--0.01, -0.01, -0.01,
+const float calibY[10] {
+-0.05,
+-0.05, -0.05, -0.05,
+-0.01, 0.03, 0.07,
+-0.05, -0.05, -0.05,
 };
 
-const float calibZ[] {
+const float calibZ[10] {
+-0.15,
 -0.15, -0.15, -0.15,
 -0.15, -0.15, -0.15,
 -0.11, -0.07, -0.03,
@@ -182,6 +186,7 @@ int main (int argc, char **argv)
 	//For data saving purposes
 	std::ofstream output_file;
 	int stepNum = 0;
+	int calibNum = 0;
 
     while(ros::ok())
     {
@@ -206,14 +211,6 @@ int main (int argc, char **argv)
 				translateGripperZ(0.15, tfpose_temp1, tfpose_temp2);
 				translateGripperX(-0.4064, tfpose_temp2, tfpose_temp3);
 				translateGripperY(0.37, tfpose_temp3, tfpose_homed);
-				//translateGripperX(0.009525, tfpose_prehomed, tfpose_homed);
-		////	trajectory.clear();
-		////	trajectory.push_back(tfpose_oriented);
-		////	trajectory.push_back(tfpose_temp1);
-		////	trajectory.push_back(tfpose_temp2);
-		////	trajectory.push_back(tfpose_temp3);
-		////	trajectory.push_back(tfpose_homed);
-		////	robot.execute_trajectory(trajectory, 0.1, "base_link");
 				robot.move_to_point(tfpose_homed, "base_link", 0.1);
 			}
 			init_state = false;
@@ -225,6 +222,16 @@ int main (int argc, char **argv)
 
 		input = getchar();
 		if (input == 'c') {
+			if (calibNum < 10) {
+				translateGripperX(calibX[calibNum], tfpose_homed, tfpose_temp1);
+				translateGripperY(calibY[calibNum], tfpose_temp1, tfpose_temp2);
+				translateGripperZ(calibZ[calibNum], tfpose_temp2, tfpose_goal);
+				robot.move_to_point(tfpose_goal, "base_link", 0.1);
+				calibNum++;
+			} else {
+				robot.move_to_point(tfpose_homed, "base_link", 0.1);
+				ROS_INFO("Done with calibration");
+			}
 		} else if (input == 'n') {
 			translateGripperZ(positionZ[stepNum], tfpose_homed, tfpose_temp1);
 			translateGripperX(positionX[stepNum], tfpose_temp1, tfpose_goal);
