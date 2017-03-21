@@ -5,6 +5,8 @@
 #include <math.h>
 #include <signal.h>
 
+#include <actionlib/client/simple_action_client.h>
+
 #include <iostream>
 #include <fstream>
 
@@ -47,7 +49,7 @@ int main (int argc, char **argv)
 		getchar();
 
 		//Home robot first
-		robot.go_home();
+		robot.go_home(client);
 
 		tfpose_init = robot.get_arm_position("base_link");
 
@@ -84,14 +86,11 @@ int main (int argc, char **argv)
         trajectory.push_back(tfpose_corner3);
         trajectory.push_back(tfpose_corner4);
 
-
         ROS_INFO("READY TO MOVE");
         getchar();
 
         /* execution*/
         robot.execute_trajectory(trajectory, 0.1, "base_link");
-
-
 
         ROS_INFO("PROGRAM COMPLETED");
 
@@ -103,47 +102,92 @@ int main (int argc, char **argv)
 
 
 #ifdef TEST
-const float calibX[10] {
-0.0,
-0.04, 0.08, 0.12,
+////const float calibX[10] {
+////0.0,
+////0.04, 0.08, 0.12,
+////0.0, 0.0, 0.0,
+////0.0, 0.0, 0.0,
+////};
+
+////const float calibY[10] {
+////-0.05,
+////-0.05, -0.05, -0.05,
+////-0.01, 0.03, 0.07,
+////-0.05, -0.05, -0.05,
+////};
+
+////const float calibZ[10] {
+////-0.15,
+////-0.15, -0.15, -0.15,
+////-0.15, -0.15, -0.15,
+////-0.11, -0.07, -0.03,
+////};
+const int calibSteps = 36;
+const float calibX[calibSteps] {
+0.120, 0.10, 0.05,
 0.0, 0.0, 0.0,
 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0,
+0.10, 0.08, 0.05,
+0.10, 0.08, 0.05,
+-0.10, -0.08, -0.05,
+-0.10, -0.08, -0.05,
+0.10, 0.08, 0.05,
+0.10, 0.08, 0.05, // first one in row was not done for 11AM_03_09
+-0.10, -0.08, -0.05,
+-0.10, -0.08, -0.05,
 };
 
-const float calibY[10] {
--0.05,
--0.05, -0.05, -0.05,
--0.01, 0.03, 0.07,
--0.05, -0.05, -0.05,
+const float calibY[calibSteps] {
+0.00, 0.00, 0.00,
+0.00, 0.00, 0.00,
+-0.05, -0.10, -0.12,
+0.01, 0.03, 0.00,
+-0.05, -0.10, -0.12,
+0.01, 0.03, 0.00,
+-0.05, -0.10, -0.12,
+0.01, 0.03, 0.00,
+-0.05, -0.10, -0.12,
+0.01, 0.03, 0.00, // first one in row was not done for 11AM_03_09
+-0.05, -0.10, -0.12,
+0.01, 0.03, 0.00,
 };
 
-const float calibZ[10] {
--0.15,
--0.15, -0.15, -0.15,
--0.15, -0.15, -0.15,
--0.11, -0.07, -0.03,
+const float calibZ[calibSteps] {
+0.00, 0.00, 0.00,
+-0.120, -0.10, -0.05,
+0.00, -0.05, -0.10,
+0.00, 0.00, -0.05,
+0.00, -0.05, -0.10,
+0.00, 0.00, 0.00,
+-0.05, -0.05, -0.10,
+0.00, 0.00, 0.00,
+-0.140, -0.155, -0.150,
+-0.140, -0.140, -0.140, // first one in row was not done for 11AM_03_09
+-0.155, -0.155, -0.150,
+-0.140, -0.140, -0.140,
 };
 
 const float positionX[40] {
+	0.180, 0.140, 0.100, 0.060, 0.020,
 	-0.020, -0.060, -0.100, -0.140, -0.180,
-	0.020, 0.060, 0.100, 0.140, 0.180,
+	0.180, 0.140, 0.100, 0.060, 0.020,
 	-0.020, -0.060, -0.100, -0.140, -0.180,
-	0.020, 0.060, 0.100, 0.140, 0.180,
+	0.180, 0.140, 0.100, 0.060, 0.020,
 	-0.020, -0.060, -0.100, -0.140, -0.180,
-	0.020, 0.060, 0.100, 0.140, 0.180,
+	0.180, 0.140, 0.100, 0.060, 0.020,
 	-0.020, -0.060, -0.100, -0.140, -0.180,
-	0.020, 0.060, 0.100, 0.140, 0.180,
 };
 
 const float positionZ[40] {
-	0.0, 0.0, 0.0, 0.0, 0.0,
-	0.0, 0.0, 0.0, 0.0, 0.0,
-	-0.04, -0.04, -0.04, -0.04, -0.04,
-	-0.04, -0.04, -0.04, -0.04, -0.04,
-	-0.08, -0.08, -0.08, -0.08, -0.08,
-	-0.08, -0.08, -0.08, -0.08, -0.08,
 	-0.16, -0.16, -0.16, -0.16, -0.16,
 	-0.16, -0.16, -0.16, -0.16, -0.16,
+	-0.08, -0.08, -0.08, -0.08, -0.08,
+	-0.08, -0.08, -0.08, -0.08, -0.08,
+	-0.04, -0.04, -0.04, -0.04, -0.04,
+	-0.04, -0.04, -0.04, -0.04, -0.04,
+	0.0, 0.0, 0.0, 0.0, 0.0,
+	0.0, 0.0, 0.0, 0.0, 0.0,
 };
 
 int main (int argc, char **argv)
@@ -188,6 +232,9 @@ int main (int argc, char **argv)
 	int stepNum = 0;
 	int calibNum = 0;
 
+    Client client ("follow_cart_trajectory");
+    client.waitForServer();
+
     while(ros::ok())
     {
 		if (init_state) {
@@ -199,7 +246,8 @@ int main (int argc, char **argv)
 
 			if (input = 'y') {
 				//Home robot first
-				robot.go_home();
+				robot.go_home(client);
+				//robot.move_to_point(robot.tf_home, "base_link", 0.1, client);
 
 				tfpose_init = robot.get_arm_position("base_link");
 
@@ -208,10 +256,10 @@ int main (int argc, char **argv)
 
 				//Rotate the end effector
 				rotateGripperZ(0.0, tool_offset, tfpose_oriented, tfpose_temp1);
-				translateGripperZ(0.15, tfpose_temp1, tfpose_temp2);
-				translateGripperX(-0.4064, tfpose_temp2, tfpose_temp3);
+				translateGripperZ(0.135, tfpose_temp1, tfpose_temp2);
+				translateGripperX(-0.4164, tfpose_temp2, tfpose_temp3);
 				translateGripperY(0.37, tfpose_temp3, tfpose_homed);
-				robot.move_to_point(tfpose_homed, "base_link", 0.1);
+				robot.move_to_point(tfpose_homed, "base_link", 0.1, client);
 			}
 			init_state = false;
 			tool_offset.setValue(xoffset, yoffset, zoffset);
@@ -222,31 +270,45 @@ int main (int argc, char **argv)
 
 		input = getchar();
 		if (input == 'c') {
-			if (calibNum < 10) {
+			if (calibNum < calibSteps) {
 				translateGripperX(calibX[calibNum], tfpose_homed, tfpose_temp1);
 				translateGripperY(calibY[calibNum], tfpose_temp1, tfpose_temp2);
 				translateGripperZ(calibZ[calibNum], tfpose_temp2, tfpose_goal);
-				robot.move_to_point(tfpose_goal, "base_link", 0.1);
+				robot.move_to_point(tfpose_goal, "base_link", 0.1, client);
 				calibNum++;
+				ROS_INFO("@calibration step %d", calibNum);
 			} else {
-				robot.move_to_point(tfpose_homed, "base_link", 0.1);
+				ROS_INFO("Done with calibration");
+			}
+		} else if (input == 'x') {
+			if (calibNum < calibSteps) {
+				translateGripperX(calibX[calibNum], tfpose_homed, tfpose_temp1);
+				translateGripperY(calibY[calibNum], tfpose_temp1, tfpose_temp2);
+				translateGripperZ(calibZ[calibNum], tfpose_temp2, tfpose_goal);
+				robot.move_to_point(tfpose_goal, "base_link", 0.1, client);
+				calibNum--;
+				ROS_INFO("@calibration step %d", calibNum);
+			} else {
 				ROS_INFO("Done with calibration");
 			}
 		} else if (input == 'n') {
-			translateGripperZ(positionZ[stepNum], tfpose_homed, tfpose_temp1);
-			translateGripperX(positionX[stepNum], tfpose_temp1, tfpose_goal);
-			robot.move_to_point(tfpose_goal, "base_link", 0.1);
 			if (stepNum < 40) {
+				translateGripperZ(positionZ[stepNum], tfpose_homed, tfpose_temp1);
+				translateGripperX(positionX[stepNum], tfpose_temp1, tfpose_goal);
+				robot.move_to_point(tfpose_goal, "base_link", 0.1, client);
+				ROS_INFO("@data step %d", calibNum);
 				stepNum++;
+			} else {
+				ROS_INFO("Done with data");
 			}
+		} else if (input == 'h') {
+			stepNum = 0;
+			calibNum = 0;
+			robot.move_to_point(tfpose_homed, "base_link", 0.1, client);
+			ROS_INFO("robot @ home");
 		}
-////else if (input == 'f') {
-////		string filename = sprintf("robot_pos%d", angleNumber);
-////		ROS_INFO("robot_pos%d", angleNumber);
-////		output_file.open(filename,fstream::out);
 ////	} else if (input == 'w') {
 ////		output_file << fixed << setprecision(5) << "hi" << "," << "hi" << endl;
-////	}
 ////	} else if (input == 'w') {
 ////		yoffset += 0.0001;
 ////		ROS_INFO("yoffset at %f", yoffset);
@@ -265,7 +327,7 @@ int main (int argc, char **argv)
 ////	} else if (input == 'f') {
 ////		zoffset += 0.0001;
 ////		ROS_INFO("zoffset at %f", zoffset);
-////	}
+////		}
 
         //ros::spinOnce();
     }
